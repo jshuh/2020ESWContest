@@ -33,9 +33,6 @@ while True:
     # 프레임 읽기
     ret, frame = vs.read()
 
-    # 읽은 프레임이 없는 경우 종료
-    if args["input"] is not None and frame is None:
-        break
     # 프레임 크기 지정
     frame = imutils.resize(frame, width=600)
 
@@ -63,7 +60,7 @@ while True:
             confidence = scores[classID]
             
             # 객체 확률이 최소 확률보다 큰 경우
-            if confidence > args["confidence"]:
+            if confidence > 0.5:
                 # bounding box 위치 계산
                 box = detection[0:4] * np.array([W, H, W, H])
                 (centerX, centerY, width, height) = box.astype("int") # (중심 좌표 X, 중심 좌표 Y, 너비(가로), 높이(세로))
@@ -78,7 +75,7 @@ while True:
                 classIDs.append(classID)
     
     # bounding box가 겹치는 것을 방지(임계값 적용)
-    idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"], args["threshold"])
+    idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.5)
     
     # 인식된 객체가 있는 경우
     if len(idxs) > 0:
@@ -111,16 +108,7 @@ while True:
     if key == ord("q"):
         break    
     # fps 정보 업데이트
-    fps.update()
-    
-    # output video 설정
-    if args["output"] != "" and writer is None:
-        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-        writer = cv2.VideoWriter(args["output"], fourcc, 25, (frame.shape[1], frame.shape[0]), True)
-    
-    # 비디오 저장
-    if writer is not None:
-        writer.write(frame)
+    fps.update()    
 
 # fps 정지 및 정보 출력
 fps.stop()
